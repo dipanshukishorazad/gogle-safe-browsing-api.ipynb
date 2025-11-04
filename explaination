@@ -1,0 +1,194 @@
+
+**Explanation**
+
+
+
+
+```
+*pip install requests*
+```
+
+
+
+
+
+
+
+Installs the requests library (only needed once, not inside your script).
+
+This is the library used to send HTTP requests to Google’s API.
+
+import requests
+import json
+
+
+requests → sends HTTP POST/GET requests.
+
+json → handles JSON data (Google API sends responses in JSON format).
+
+API_KEY = "YOUR_GOOGLE_API_KEY"  # get from Google Cloud Console
+
+
+You need to replace "YOUR_GOOGLE_API_KEY" with your actual API key from Google Cloud Console.
+
+This key authenticates your program so Google allows you to use the Safe Browsing API.
+
+url_to_check = "http://testsafebrowsing.appspot.com/s/phishing.html"
+
+
+The website URL you want to test.
+
+Here, Google provides a test phishing link.
+
+You can replace this with any real URL (e.g., "https://example.com").
+
+safe_browsing_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={API_KEY}"
+
+
+The endpoint (API URL) for Google Safe Browsing v4.
+
+f"" is a formatted string → it inserts your API key into the URL.
+
+Example:
+
+https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIza...
+
+payload = {
+    "client": {
+        "clientId": "yourcompanyname",
+        "clientVersion": "1.0"
+    },
+    "threatInfo": {
+        "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "POTENTIALLY_HARMFUL_APPLICATION", "THREAT_TYPE_UNSPECIFIED"],
+        "platformTypes": ["ANY_PLATFORM"],
+        "threatEntryTypes": ["URL"],
+        "threatEntries": [
+            {"url": url_to_check}
+        ]
+    }
+}
+
+This is the request body (payload) you send to Google:
+
+client → identifies your app. You can put any name/version here.
+
+threatInfo → defines what you want Google to check:
+
+threatTypes: types of dangers to check for:
+
+"MALWARE" → malicious software
+
+"SOCIAL_ENGINEERING" → phishing / scams
+
+"POTENTIALLY_HARMFUL_APPLICATION" → bad apps
+
+"THREAT_TYPE_UNSPECIFIED" → general check
+
+platformTypes: "ANY_PLATFORM" (works for all OS/browsers).
+
+threatEntryTypes: "URL" (we are checking a website URL).
+
+threatEntries: the actual URL(s) you want to check (here just one, url_to_check).
+
+response = requests.post(safe_browsing_url, json=payload)
+
+
+Sends an HTTP POST request to Google’s Safe Browsing API.
+
+json=payload means Python will send the payload dictionary as JSON data in the request body.
+
+The response from Google will say whether the site is safe or dangerous.
+
+result = response.json()
+
+
+Converts the API’s JSON response into a Python dictionary (result).
+
+Example of response if dangerous:
+
+{
+  "matches": [
+    {
+      "threatType": "SOCIAL_ENGINEERING",
+      "platformType": "ANY_PLATFORM",
+      "threat": {"url": "http://testsafebrowsing.appspot.com/s/phishing.html"}
+    }
+  ]
+}
+
+
+Example if safe:
+
+{}
+
+if "matches" in result:
+    print("⚠️ Dangerous website detected:", result["matches"])
+else:
+    print("✅ Safe website")
+
+
+If "matches" exists in the result, the site is dangerous (phishing/malware).
+
+Otherwise, the site is safe.
+
+Prints the result in the terminal.
+
+🔹 How It Works in Practice
+
+Replace API_KEY with your actual Google API key.
+
+Run the script in VS Code:
+
+python app.py
+
+
+If the site is phishing → prints:
+
+⚠️ Dangerous website detected: [{'threatType': 'SOCIAL_ENGINEERING', ...}]
+
+
+If safe → prints:
+
+✅ Safe website
+
+
+✅ So this code is a ready-to-use phishing/malware checker using Google’s database.
+
+
+
+
+```
+import requests
+import json
+
+API_KEY = "YOUR_GOOGLE_API_KEY"  # get from Google Cloud Console
+
+url_to_check = "http://testsafebrowsing.appspot.com/s/phishing.html"
+
+safe_browsing_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={API_KEY}"
+
+payload = {
+    "client": {
+        "clientId": "yourcompanyname",
+        "clientVersion": "1.0"
+    },
+    "threatInfo": {
+        "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "POTENTIALLY_HARMFUL_APPLICATION", "THREAT_TYPE_UNSPECIFIED"],
+        "platformTypes": ["ANY_PLATFORM"],
+        "threatEntryTypes": ["URL"],
+        "threatEntries": [
+            {"url": url_to_check}
+        ]
+    }
+}
+
+response = requests.post(safe_browsing_url, json=payload)
+result = response.json()
+
+if "matches" in result:
+    print("⚠️ Dangerous website detected:", result["matches"])
+else:
+    print("✅ Safe website")
+
+```
+
